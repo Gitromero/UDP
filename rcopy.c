@@ -18,6 +18,8 @@
 #include "gethostbyname.h"
 #include "networks.h"
 #include "safeUtil.h"
+#include "cpe464.h"
+#include "PDU.h"
 
 #define MAXBUF 80
 
@@ -32,8 +34,10 @@ int main (int argc, char *argv[])
 	int portNumber = 0;
 	
 	portNumber = checkArgs(argc, argv);
-	
-	socketNum = setupUdpClientToServer(&server, argv[1], portNumber);
+	double errRate = atof(argv[1]);
+	sendErr_init(errRate, DROP_ON, FLIP_ON, DEBUG_ON, RSEED_OFF);
+
+	socketNum = setupUdpClientToServer(&server, argv[2], portNumber);
 	
 	talkToServer(socketNum, &server);
 	
@@ -49,21 +53,35 @@ void talkToServer(int socketNum, struct sockaddr_in6 * server)
 	int dataLen = 0; 
 	char buffer[MAXBUF+1];
 	
+	uint8_t pduBuffer[MAX_PDU_SIZE];
+    uint8_t recvPDU[MAX_PDU_SIZE];
+
+    int pduLen = 0;
+    int recvLen = 0;
+
+    uint32_t sequenceNumber = 0;
+    uint8_t flag = 222;
+
 	buffer[0] = '\0';
 	while (buffer[0] != '.')
 	{
 		dataLen = readFromStdin(buffer);
 
-		printf("Sending: %s with len: %d\n", buffer,dataLen);
+		pduLen = createPDU(pduBuffer, sequenceNumber, flag, (uint8_t *)buffer, dataLen);
+
+		printf("Sending: %s with len: %d as a PDU\n", buffer, dataLen);
+		printPDU(pduBuffer, pduLen);
 	
-		safeSendto(socketNum, buffer, dataLen, 0, (struct sockaddr *) server, serverAddrLen);
+		safeSendto(socketNum, pduBuffer, pduLen, 0, (struct sockaddr *) server, serverAddrLen);
 		
-		safeRecvfrom(socketNum, buffer, MAXBUF, 0, (struct sockaddr *) server, &serverAddrLen);
+		safeRecvfrom(socketNum, recvPDU, MAX_PDU_SIZE, 0, (struct sockaddr *) server, &serverAddrLen);
 		
 		// print out bytes received
 		ipString = ipAddressToString(server);
 		printf("Server with ip: %s and port %d said it received %s\n", ipString, ntohs(server->sin6_port), buffer);
-	      
+	    
+		printPDU(recvPDU, recvLen);
+		sequenceNumber++;
 	}
 }
 
@@ -99,13 +117,14 @@ int checkArgs(int argc, char * argv[])
 	
     /* check command line arguments  */
 	
-	if (argc != 3)
+	if (argc != 4)
 	{
-		printf("usage: %s host-name port-number \n", argv[0]);
+		printf("usage: %s error-rate host-name port-number \n", argv[0]);
+		printf("Please include Error Rate 0-1");
 		exit(1);
 	}
 	
-	portNumber = atoi(argv[2]);
+	portNumber = atoi(argv[3]);
 		
 	return portNumber;
 }
