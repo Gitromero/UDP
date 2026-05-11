@@ -12,13 +12,13 @@ OBJS = networks.o gethostbyname.o safeUtil.o pollLib.o
 #LIBS += libcpe464.2.21.a -lstdc++ -ldl
 #CFLAGS += -D__LIBCPE464_
 
-all:  udpClient udpServer
+all:  rcopy server
 
-udpClient: udpClient.c $(OBJS) 
-	$(CC) $(CFLAGS) -o udpClient udpClient.c $(OBJS) $(LIBS)
+rcopy: rcopy.c $(OBJS) 
+	$(CC) $(CFLAGS) -o rcopy rcopy.c $(OBJS) $(LIBS)
 
-udpServer: udpServer.c $(OBJS) 
-	$(CC) $(CFLAGS) -o udpServer udpServer.c  $(OBJS) $(LIBS)
+server: server.c $(OBJS) 
+	$(CC) $(CFLAGS) -o server server.c  $(OBJS) $(LIBS)
 
 %.o: %.c *.h 
 	gcc -c $(CFLAGS) $< -o $@ 
@@ -27,5 +27,5 @@ cleano:
 	rm -f *.o
 
 clean:
-	rm -f udpServer udpClient *.o
+	rm -f server rcopy *.o
 
