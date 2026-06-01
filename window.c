@@ -1,77 +1,80 @@
 #include "window.h"
 
-static WinThrup *window = NULL;
-static int winSize = 0;
-static uint32_t low = 0;
-static uint32_t curr = 0;
-static uint32_t upp = 0;
+static SendWindow sendWin;
 
 void winAlloc(int size)
 {
-    winSize = size;
-    low = 0;
-    curr = 0;
-    upp = size;  
+    sendWin.winSize = size;
+    sendWin.low = 0;
+    sendWin.curr = 0;
+    sendWin.upp = size;
 
-    window = calloc(winSize, sizeof(WinThrup));
-    if (window == NULL) {
+    sendWin.window = calloc(sendWin.winSize, sizeof(WinThrup));
+
+    if (sendWin.window == NULL) {
         perror("Allocating window buffer failed");
         exit(-1);
     }
 }
+
 void winStore(uint32_t seq, uint8_t *pdu, int len)
 {
-    int idx = seq % winSize;
-    memcpy(window[idx].pdu, pdu, len);
+    int idx = seq % sendWin.winSize;
 
-    window[idx].len = len;
-    window[idx].inUse = 1;
+    memcpy(sendWin.window[idx].pdu, pdu, len);
+    sendWin.window[idx].len = len;
+    sendWin.window[idx].inUse = 1;
 }
 
-void winSlide(uint32_t newlow)
+void winSlide(uint32_t newLow)
 {
-    while (low < newlow) {
-        window[low % winSize].inUse = 0;
-        low++;
+    while (sendWin.low < newLow) {
+        sendWin.window[sendWin.low % sendWin.winSize].inUse = 0;
+        sendWin.low++;
     }
-    upp = low + winSize;
+
+    sendWin.upp = sendWin.low + sendWin.winSize;
 }
 
-int winGetPDU(uint32_t seq, uint8_t *outwindow)
+int winGetPDU(uint32_t seq, uint8_t *outWindow)
 {
-    int idx = seq % winSize;
-    if (!window[idx].inUse){
+    int idx = seq % sendWin.winSize;
+
+    if (!sendWin.window[idx].inUse) {
         return -1;
     }
 
-    memcpy(outwindow, window[idx].pdu, window[idx].len);
-    return window[idx].len;
+    memcpy(outWindow, sendWin.window[idx].pdu, sendWin.window[idx].len);
+    return sendWin.window[idx].len;
 }
 
 void winFree()
 {
-    free(window);
-    window = NULL;
+    free(sendWin.window);
+    sendWin.window = NULL;
 }
 
 int winClosed()
 {
-    return curr == upp;
-;
+    return sendWin.curr == sendWin.upp;
 }
 
-uint32_t winGetLower() { 
-    return low; 
-}
-uint32_t winGetCurrent() { 
-    return curr; 
-}
-uint32_t winGetUpper() { 
-    return upp; 
+uint32_t winGetLower()
+{
+    return sendWin.low;
 }
 
-void winAdvance(){
-    curr++;
+uint32_t winGetCurrent()
+{
+    return sendWin.curr;
 }
 
+uint32_t winGetUpper()
+{
+    return sendWin.upp;
+}
 
+void winAdvance()
+{
+    sendWin.curr++;
+}

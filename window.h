@@ -7,6 +7,14 @@
 #include <stdint.h>
 
 #include "PDU.h"
+//local vars packed
+typedef struct {
+    WinThrup *window;
+    int winSize;
+    uint32_t low;
+    uint32_t curr;
+    uint32_t upp;
+} SendWindow;
 
 // thrup for cirtcular list
 typedef struct {
