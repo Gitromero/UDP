@@ -31,6 +31,16 @@ typedef struct {
     int srejSent;
 } BuffSlot;
 
+//local vars packed
+typedef struct {
+    BuffSlot *buff;
+    int buffSize;
+    int sock;
+    int outFd;
+    struct sockaddr_in6 clientAddr;
+    uint32_t expSeq;
+} RecvBuff;
+
 // Alloc buff and golbal vars
 void buffAlloc(int winSize, int sock, int outFd, struct sockaddr_in6 *client);
 

@@ -7,6 +7,14 @@
 #include <stdint.h>
 
 #include "PDU.h"
+
+// thrup for cirtcular list
+typedef struct {
+    uint8_t pdu[MAX_PDU_SIZE];
+    int len;
+    int inUse;
+} WinThrup;
+
 //local vars packed
 typedef struct {
     WinThrup *window;
@@ -16,12 +24,6 @@ typedef struct {
     uint32_t upp;
 } SendWindow;
 
-// thrup for cirtcular list
-typedef struct {
-    uint8_t pdu[MAX_PDU_SIZE];
-    int len;
-    int inUse;
-} WinThrup;
 
 //core
 void winAlloc(int size);
