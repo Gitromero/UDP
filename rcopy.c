@@ -22,6 +22,19 @@
 #include "PDU.h"
 
 #define MAXBUF 80
+#define MAX_FILENAME 100
+#define MAX_TRIES 10
+#define TIMEOUT_1S 1000
+#define TIMEOUT_FILENAME 1000
+
+#define FLAG_DATA 3
+#define FLAG_RR 5
+#define FLAG_SREJ 6
+#define FLAG_FNAME 7
+#define FLAG_FNAME_OK 8
+#define FLAG_EOF 32
+#define FLAG_EOF_ACK 33
+#define FLAG_FNAME_ERR 34
 
 void talkToServer(int socketNum, struct sockaddr_in6 * server);
 int readFromStdin(char * buffer);
@@ -117,17 +130,29 @@ int checkArgs(int argc, char * argv[])
 	
     /* check command line arguments  */
 	
-	if (argc != 4)
+	if (argc != 8)
 	{
-		printf("usage: %s error-rate host-name port-number \n", argv[0]);
-		printf("Please include Error Rate 0-1");
-		exit(1);
+		printf("usage: %s from-file to-file window-size buffer-size error-rate remote-machine remote-port \n", argv[0]);
+		printf("Please include Error Rate 0.0-1.0");
+		exit(-1);
 	}
-	
-	portNumber = atoi(argv[3]);
+    	if (strlen(argv[1]) > MAX_FILENAME || strlen(argv[2]) > MAX_FILENAME) {
+        	printf("Error: filename too long (max %d chars)\n", MAX_FILENAME);
+        	exit(-1);
+    	}
+
+    	double rate = atof(argv[5]);
+    	if (rate < 0.0 || rate >= 1.0) {
+        	printf("Error: Error Rate must be between 0.0-1.0\n");
+        	exit(-1);
+    	}	
+
+	portNumber = atoi(argv[7]);
 		
 	return portNumber;
 }
+
+
 
 
 

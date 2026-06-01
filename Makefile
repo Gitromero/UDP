@@ -5,8 +5,8 @@ CC = gcc
 CFLAGS = -g -Wall -std=gnu99
 
 
-SRC = networks.c  gethostbyname.c safeUtil.c pollLib.c PDU.c
-OBJS = networks.o gethostbyname.o safeUtil.o pollLib.o PDU.o
+SRC = networks.c  gethostbyname.c safeUtil.c pollLib.c PDU.c window.c buffer.c
+OBJS = networks.o gethostbyname.o safeUtil.o pollLib.o PDU.o window.o buffer.o
 
 #uncomment next two lines if your using sendtoErr() library
 LIBS += libcpe464.2.21.a -lstdc++ -ldl
