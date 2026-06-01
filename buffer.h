@@ -16,7 +16,7 @@
 
 // state format with a defaualt added
 typedef enum {
-    SEQ_BEHIND = 0,
+    SEQ_BEHIND,
     SEQ_GOOD,
     SEQ_AHEAD,
     SEQ_BAD
